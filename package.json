@@ -1,0 +1,10 @@
+{
+  "name": "lavalink-on-javascript",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^7.1.0"
+  }
+}

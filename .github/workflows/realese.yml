@@ -1,0 +1,23 @@
+name: Criação de realese
+on:
+  push:
+    branches: 
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Archive Release
+      uses: thedoctor0/zip-release@master
+      with:
+        filename: 'lavalink-nodejs.zip'
+        exclusions: '*.git* *.eslintrc.json *package-lock.json'
+    - name: Automatic Releases
+      uses: marvinpinto/action-automatic-releases@v1.0.0
+      with:
+        repo_token: "${{secrets.GITHUB_TOKEN}}"
+        prerelease: false
+        automatic_release_tag: "latest"
+        files: |
+          *.zip
