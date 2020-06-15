@@ -1,5 +1,6 @@
 /*
-    Está é a minha macumba de executar o lavalink no node com 1 bot incluido
+    
+    Este codigo é reponsavel para executar o Lavalink com o Node.js e 1 bot incluido
 
     Explicação rapida do codigo
         Isto tem varias funções espalhadas pelo codigo (mas esteve mais)
@@ -142,7 +143,7 @@ async function runLavalink() {
         } else { 
             console.error("O lavalink caiu mais de 3 seguidas... Tudo vai ser desligado!!")
             if(runNode) await runNode.kill() //matar o node do bot (pensando bem vai dar BO com shards (já que o codigo é 1 genero de que as shards fazem))
-            process.exit(1) //desligar tudo
+            process.exit(runLava.exitCode) //desligar tudo
         }
     })
 
@@ -200,7 +201,7 @@ async function runBot(dir) {
             tryRunLavalink = 4 //por contador mais que 3 para parar de contar
             runLava.kill() //kill lavalink
         }
-        process.exit(1) //desligar tudo
+        process.exit(runNode.exitCode) //desligar tudo
     })
 }
 
