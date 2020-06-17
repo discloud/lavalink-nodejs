@@ -20,14 +20,23 @@ Para usar este codigo basta fazer:
 3. No arquivo [`config.json`](./config.json) no [`fileRunBot`](./config.json#L7) altere o nome do arquivo principal (no caso está `bot.js` mas se for outro nome (como por exemplo `index.js`) troque para o nome correto)
 4. No seu codigo, área onde você conecta o Lavalink por favor coloque este dados:
 > ```js
->{
+> {
 >   host: "localhost",
 >   port: 2333,
 >   password: "discloud"
->}
->```
+> }
+> ```
 
 Depois de tudo feito e envie para a Discloud colocando `index.js` como Arquivo Principal
 
 
 ## FAQ
+
+### O Java/Lavalink está/estãos corrompido(s) o que eu faço agora?
+De maneira mais rapida de resolver é deletando o diretório `java` (que é o diretório onde se localiza os arquivos do OpenJDK e do LavaLink) e iniciando o BOT de novo que irá baixar tudo de novo
+
+### Quero fazer backup do meu arquivos mas é muito pessado download o que eu faço?
+Para reduzir o peso do download do backup você pode remover:
+- o diretório `java`
+- o diretório `node_modules` que se encontra no diretório [`bot`](./bot/) (já que a Discloud não consegue controlar esse `node_modules` devido não estar na raiz da Instancia)
+- caso não queira receber os no backup dos logs remova tambem o diretório `logs`
