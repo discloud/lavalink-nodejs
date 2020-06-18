@@ -48,7 +48,7 @@ No proximos arranque é só esperar o lavalink iniciar
 **Obs:** ao remover o diretório `java` vai ser como o primeiro arranque!!
 
 ### Parece que este codigo fui atualizado, como procede a atualização?
-De maneira rapida na Discloud é só deletar a diretório `java` (pode ter atualização nos arquivos) baixar a nova `Release`, fazer alteração do [`fileRunBot`](./config.json#L7) que já fui comentada e enviar alerações
+De maneira rapida na Discloud é só deletar a diretório `java` (pode ter atualização nos arquivos) baixar a nova [`Release`](https://github.com/discloud/lavalink-nodejs/releases/latest/download/lavalink-nodejs.zip), fazer alteração do [`fileRunBot`](./config.json#L7) que já fui comentada e enviar alerações
 
 ### Como faço alterações do meu BOT com este codigo?
 De maneira simples o seu arquivo zip de alteração de codigo tem de estar assim:
