@@ -1,0 +1,36 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  realese:
+    name: Criação de realese
+    runs-on: ubuntu-latest
+    if: "github.event_name == 'push' && github.ref == 'dev' && startsWith(github.event.head_commit.message, '[UP]')"
+    steps:
+      - uses: actions/checkout@master
+      - name: Compactar os arquivos
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: 'lavalink-nodejs.zip'
+          exclusions: '*.git* *.eslintrc.json *package-lock.json'
+      - name: Enviar para a realese
+        uses: marvinpinto/action-automatic-releases@v1.0.0
+        with:
+          repo_token: "${{secrets.GITHUB_TOKEN}}"
+          prerelease: false
+          automatic_release_tag: "latest"
+          files: |
+            *.zip
+  artifact:
+    name: Criação de Artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Compactar os arquivos
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: 'lavalink-nodejs.zip'
+          exclusions: '*.git* *.eslintrc.json *package-lock.json'
+      - name: Artifacts
+        uses: actions/checkout@v2
+        with:
+          path: 'lavalink-nodejs.zip'
