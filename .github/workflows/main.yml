@@ -4,7 +4,7 @@ jobs:
   realese:
     name: Criação de realese
     runs-on: ubuntu-latest
-    if: "github.event_name == 'push' && startsWith(github.event.head_commit.message, '[UP]')"
+    if: "github.event_name == 'push' && github.ref == 'refs/heads/dev' && startsWith(github.event.head_commit.message, '[UP]')"
     steps:
       - uses: actions/checkout@master
       - name: Compactar os arquivos
