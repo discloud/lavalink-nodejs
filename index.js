@@ -286,7 +286,7 @@ async function run(){
 
     setTimeout(() => { //delay para executar o bot (dar 1 tempo o lavalink acordar)
         runBot(dirBot) 
-    }, 10*1000);
+    }, 20*1000);
 
 }
 run()
