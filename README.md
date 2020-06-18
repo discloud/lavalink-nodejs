@@ -40,3 +40,19 @@ Para reduzir o peso do download do backup você pode remover:
 - o diretório `java`
 - o diretório `node_modules` que se encontra no diretório [`bot`](./bot/) (já que a Discloud não consegue controlar esse `node_modules` devido não estar na raiz da Instancia)
 - caso não queira receber os no backup dos logs remova tambem o diretório `logs`
+
+### Porque o meu BOT demora muito para ficar online?
+No primeiro arranque é claro que demora mais algum tempo que esperado já antes de iniciar o BOT tem de fazer download do OpenJDK e do Lavalink (e claro isso depende da internet) e iniciar o Lavalink primeiro
+No proximos arranque é só esperar o lavalink iniciar
+
+**Obs:** ao remover o diretório `java` vai ser como o primeiro arranque!!
+
+### Parece que este codigo fui atualizado, como procede a atualização?
+De maneira rapida na Discloud é só deletar a diretório `java` (pode ter atualização nos arquivos) baixar a nova [`Release`](#L18), fazer alteração do [`fileRunBot`](./config.json#L7) que [já fui comentada](#L20) e enviar alerações
+
+### Como faço alterações do meu BOT com este codigo?
+De maneira simples o seu arquivo zip de alteração de codigo tem de estar assim:
+```
+zip > bot > <seu codigo>
+```
+Já que o seu codigo está numa pasta bot para fazer alteração de por a pasta bot no meio (se não pôr essa pasta o seu codigo irá ficar junto com o Codigo e poderá quebrar tudo)
