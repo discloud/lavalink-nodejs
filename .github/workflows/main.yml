@@ -31,6 +31,6 @@ jobs:
           filename: 'lavalink-nodejs.zip'
           exclusions: '*.git* *.eslintrc.json *package-lock.json'
       - name: Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/upload-artifact@v2
         with:
           path: 'lavalink-nodejs.zip'
