@@ -29,7 +29,7 @@ jobs:
         uses: thedoctor0/zip-release@master
         with:
           filename: 'lavalink-nodejs.zip'
-          exclusions: '*.git* *.eslintrc.json *package-lock.json'
+          exclusions: '*.git* *.eslintrc.json *package-lock.json *yarn.lock'
       - name: Artifacts
         uses: actions/upload-artifact@v2
         with:
