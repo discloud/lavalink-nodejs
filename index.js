@@ -12,7 +12,7 @@
 */
 
 //Variavel do arquivo de configuração do lavalink (possivel ser editado, é recomendado ter password (existe algumas depencias))
-const lavaymal = `
+let lavaymal = `
 server: # REST and WS server
   port: 2333
   address: 0.0.0.0
@@ -50,16 +50,6 @@ sentry:
 #  tags:
 #    some_key: some_value
 #    another_key: another_value
-
-logging:
-  file:
-    max-history: 30
-    max-size: 1GB
-  path: ./logs/
-
-  level:
-    root: INFO
-    lavalink: INFO
 `
 //--------------------------------
 
@@ -67,7 +57,9 @@ logging:
 // ˘˘˘˘˘˘˘˘˘˘˘ requerimentos ˘˘˘˘˘˘˘˘˘˘˘
 const 
     { spawn, spawnSync } = require("child_process"), //chamando o modulo child_porcess (is native in node) (é o shelljs no proprio node) para executar o codigos no shell
-    {readdirSync, appendFileSync} = require("fs"), //chamado o fs (is native in node) para ler diretário e criar os arquivos de logs na pasta logs
+    { readdirSync, appendFileSync, unlinkSync, mkdirSync, rmdirSync } = require("fs"), //chamado o fs (is native in node) para ler diretário e criar os arquivos de logs na pasta logs
+    moment = require("moment"), //chamando o node
+    time = moment().unix(), //hora do start code
     config = require("./config.json") //chamando a config da macumba
         /*Tradução do config.json
             - openJDK //objeto que contem as coisas necesárias do openJDK
@@ -82,15 +74,23 @@ const
         */
 // ^^^^^^^^^^^ requerimentos ^^^^^^^^^^^
 
+// verifica se os logs estão ativos
+if (config.logMODE === true) lavaymal = lavaymal +`
+logging:
+  file:
+    max-history: 10
+    max-size: 200MB
+  path: ../../logs/lavalink/
+
+  level:
+    root: INFO
+    lavalink: INFO
+`
+
 //função para verificar se existe 1 diretório
 async function isDirValid(dirents, name){
     let lookDir //variavel para verficar se existe
-    for (const item of dirents) {
-        if (item.isDirectory() /*é diretório?*/ && item.name === name/* tem o nome que procuro?*/) {
-            lookDir = true //encontrou
-            break // parou pesquisa!!
-        }
-    }
+    for (const item of dirents) if (item.isDirectory() /*é diretório?*/ && item.name === name/* tem o nome que procuro?*/) lookDir = true //encontrou
     if (!lookDir) lookDir = false //nao encontrou
     return lookDir
 }
@@ -98,12 +98,7 @@ async function isDirValid(dirents, name){
 //função para verificar se existe 1 arquivo 
 async function isFileValid(dirents, name){
     let lookFile //variavel para verficar se existe
-    for (const item of dirents) {
-        if (!item.isDirectory() /*é arquivo?*/ && item.name === name /* tem o nome que procuro?*/) {
-            lookFile = true //encontrou
-            break // parou pesquisa!!
-        }
-    }
+    for (const item of dirents) if (!item.isDirectory() /*é arquivo?*/ && item.name === name /* tem o nome que procuro?*/) lookFile = true //encontrou
     if (!lookFile) lookFile = false //nao encontrou
     return lookFile
 }
@@ -117,21 +112,6 @@ async function runLavalink() {
     console.log("Iniciando Lavalink...")
     const urlJava = process.cwd() + `/java/jdk-${config.openJDK.version}/bin/java` //caminho fixo até ao java
     runLava = spawn(urlJava, ["-jar", "Lavalink.jar"], {cwd: "./java/lavalink"}) //executa 1 lavalink no diretório java/lavalink (dando 1 cd até lá executar)
-
-    //setar o terminal para utf-8
-    runLava.stdout.setEncoding("utf-8") 
-    runLava.stderr.setEncoding("utf-8")
-    //------------------
-    
-    //eventos de logs do terminal do lavalink
-    runLava.stdout.on("data", (data) => {
-        appendFileSync("./logs/lavalink-logs.log", data.trim()+"\n", {encoding: "utf-8"}) //envia os logs para 1 arquivo na pasta logs
-    })
-
-    runLava.stderr.on("data", (data) => {
-        appendFileSync("./logs/lavalink-logs.log", data.trim()+"\n", {encoding: "utf-8"})//envia os logs para 1 arquivo na pasta logs
-    })
-    //--------------
 
     // quando o lavalink cair
     runLava.on("close", async (code) => {
@@ -153,9 +133,10 @@ async function runLavalink() {
 async function runBot(dir) {
     console.log("Preparando o Bot...")
     if (await isDirValid(dir, "node_modules")) { //verifica se a pasta node_modules está lá dentro
-        const rm = spawnSync("rm", ["-rf", "node_modules/"], {cwd: "./bot", encoding: "utf-8"}) // remove a pasta node_modules
-        if (rm.status !== 0) { //quando o comando terminal verficar se correu sem problemas
-            console.error("Erro ao remover a pasta node_modules", rm.stderr.trim())
+        try {
+            rmdirSync("./bot/node_modules/", {recursive: true})
+        } catch (err) {
+            console.error("Erro ao remover a pasta node_modules", err)
             if(runLava) { //matar o lavalink tambem
                 tryRunLavalink = 4 //por contador mais que 3 para parar de contar
                 await runLava.kill() //kill lavalink
@@ -163,8 +144,9 @@ async function runBot(dir) {
             return process.exit(1) //desligar tudo
         }
     }
+
     const npm = spawnSync("npm", ["i"], {cwd: "./bot", encoding: "utf-8"})
-    appendFileSync("./logs/npm.log",  `logs:\n${npm.stdout.trim()}\n\n\n\nerros:\n${npm.stderr.trim()}\n`, {encoding: "utf-8"})
+    if (config.logMODE === true) appendFileSync(`./logs/npm-${time}.log`,  `logs:\n${npm.stdout.trim()}\n\n\n\nerros:\n${npm.stderr.trim()}\n`, {encoding: "utf-8"})
     if (npm.status !== 0) {
         console.error("Erro ao instalar os modulos", npm.stderr.trim())
         if(runLava) { //matar o lavalink tambem
@@ -185,12 +167,12 @@ async function runBot(dir) {
     //eventos de logs do terminal do bot
     runNode.stdout.on("data", (data) => {
         console.log(data.trim()) //console log do bot
-        appendFileSync("./logs/bot-logs.log", data.trim()+"\n", {encoding: "utf-8"})
+        if (config.logMODE === true) appendFileSync(`./logs/bot-logs-${time}.log`, data.trim()+"\n", {encoding: "utf-8"})
     })
 
     runNode.stderr.on("data", (data) => {
         console.error(data.trim()) //console error do bot
-        appendFileSync("./logs/bot-logs.log", data.trim()+"\n", {encoding: "utf-8"})
+        if (config.logMODE === true) appendFileSync(`./logs/bot-logs-${time}.log`, data.trim()+"\n", {encoding: "utf-8"})
     })
     //--------------
 
@@ -210,18 +192,20 @@ async function run(){
     console.log("Preparando o sistema")
     let rootCode = readdirSync("./", {encoding: "utf-8", withFileTypes: true}) //lê a raiz do codigo
 
-    if (!(await isDirValid(rootCode, "logs"))) { //verifica se a diretório logs exite
-        const mk = spawnSync("mkdir", ["logs"], {encoding: "utf-8"}) //cria a diretório logs
-        if (mk.status !== 0) { //deu erro!!
-            console.error("Erro ao criar a pasta logs:", mk.stderr.trim())
+    if (config.logMODE === true && !(await isDirValid(rootCode, "logs"))) { //verifica se a diretório logs exite
+        try {
+            mkdirSync("logs") //cria a diretório logs
+        } catch (err) {
+            console.error("Erro ao criar a pasta logs:", err)
             return process.exit(1) //parou tudo
         }
     }
     
     if (!(await isDirValid(rootCode, "java"))) { //verifica se a diretório java exite
-        const mk = spawnSync("mkdir", ["java"], {encoding: "utf-8"}) //cria a diretório java
-        if (mk.status !== 0) { //deu erro!!
-            console.error("Erro ao criar a pasta java:", mk.stderr.trim())
+        try {
+            mkdirSync("java") //cria a diretório java
+        } catch (err) {
+            console.error("Erro ao criar a pasta java:", err)
             return process.exit(1) //parou tudo
         }
     }
@@ -240,13 +224,18 @@ async function run(){
     
     let dirJava = readdirSync("./java", {encoding: "utf-8", withFileTypes: true}) //lê o diretório java
 
-    if (!(await isFileValid(dirJava, "java.tar.gz"))) { //verifica se o openjdk fui baixado (qualquer alteração o arquivo terá de ser removido manualmente)
+    if (!(await isDirValid(dirJava, `jdk-${config.openJDK.version}`))) { //verifica se o openjdk fui baixado (qualquer alteração o arquivo terá de ser removido manualmente)
         console.log("Baixando o openJDK") 
         
-        const downJDK = spawnSync("wget", ["-c", "-o", `../logs/downjava.log`, "-O", "java.tar.gz", config.openJDK.linkDown], {encoding: "utf-8", cwd: "./java"}) //wget para baixar o o openjdk
+        let downJDK
+        if (config.logMODE === true) {
+            downJDK = spawnSync("wget", ["-c", "-o", `../logs/downjava-${time}.log`, "-O", "java.tar.gz", config.openJDK.linkDown], {encoding: "utf-8", cwd: "./java"}) //wget para baixar o o openjdk
+        } else {
+            downJDK = spawnSync("wget", ["-c", "-O", "java.tar.gz", config.openJDK.linkDown], {encoding: "utf-8", cwd: "./java"}) //wget para baixar o o openjdk
+        }
         if (downJDK.status !== 0) { //deu erro
             console.error("Erro ao baixar o openjdk:", downJDK.stderr.trim())
-            return process.exit(1)//parou tudo
+            return process.exit(1) //parou tudo
         }
         console.log("OpenJDK baixado com sucesso")
         
@@ -256,15 +245,22 @@ async function run(){
             console.error("Erro erro ao :", tarExtract.stderr.trim())
             return process.exit(1)//parou tudo
         }
-        appendFileSync("./logs/extractJava.log", tarExtract.stdout.trim()+"\n", {encoding: "utf-8"}) //logs da extração do java
+        if (config.logMODE === true) appendFileSync(`./logs/extractJava-${time}.log`, tarExtract.stdout.trim()+"\n", {encoding: "utf-8"}) //logs da extração do java
         console.log("Extração completa")
+        try {
+            unlinkSync("./java/java.tar.gz")
+        } catch (err) {
+            console.error("Falha ao remover o java.tar.gz!!")
+            console.error(err)
+        }
     }
 
     if (!(await isDirValid(dirJava, "lavalink"))) { //verifica se a diretório lavalink se existe no diretório java
-        const mk = spawnSync("mkdir", ["lavalink"], {encoding: "utf-8", cwd: "./java"}) //cria a diretório lavalink
-        if (mk.status !== 0) {//deu erro
-            console.error("Erro ao criar a pasta lavalink:", mk.stderr.trim())
-            return process.exit(1)//parou tudo
+        try {
+            mkdirSync("./java/lavalink") //cria a diretório lavalink
+        } catch (err) {
+            console.error("Erro ao criar a pasta lavalink:", err)
+            return process.exit(1) //parou tudo
         }
     }
 
@@ -272,7 +268,10 @@ async function run(){
     
     if (!(await isFileValid(dirLavalink, "Lavalink.jar"))) { //verefica se o arquivo Lavalink.jat fui baixado (qualquer alteração o arquivo terá de ser removido manualmente)
         console.log("Baixando o Lavalink")
-        const downLavalink = spawnSync("wget", ["-c", "-o", `../../logs/lavalinkdown.log`, "-O", "Lavalink.jar", config.lavalink], {encoding: "utf-8", cwd: "./java/lavalink"}) //baixaindo o lavalink
+
+        let downLavalink
+        if (config.logMODE === true) downLavalink = spawnSync("wget", ["-c", "-o", `../../logs/lavalinkdown-${time}.log`, "-O", "Lavalink.jar", config.lavalink], {encoding: "utf-8", cwd: "./java/lavalink"}) //baixaindo o lavalink
+        else downLavalink = spawnSync("wget", ["-c", "-O", "Lavalink.jar", config.lavalink], {encoding: "utf-8", cwd: "./java/lavalink"}) //baixaindo o lavalink
         if (downLavalink.status !== 0) {//deu erro
             console.error("Erro ao baixar o openjdk:", downLavalink.stderr.trim())
             return process.exit(1)//parou tudo
@@ -280,8 +279,8 @@ async function run(){
         console.log("Lavalink baixado com sucesso")
     }
 
-    if (!(await isFileValid(dirLavalink, "application.yml"))) appendFileSync("./java/lavalink/application.yml", lavaymal, {encoding: "utf-8"}) //se o arquivo application.yml existe
-
+    if (await isFileValid(dirLavalink, "application.yml")) unlinkSync("./java/lavalink/application.yml") //se o arquivo application.yml existe
+    appendFileSync("./java/lavalink/application.yml", lavaymal, {encoding: "utf-8"})
     runLavalink() // executa o lavalink
 
     setTimeout(() => { //delay para executar o bot (dar 1 tempo o lavalink acordar)
