@@ -3,6 +3,6 @@
         "version": "13",
         "linkDown": "https://download.java.net/openjdk/jdk13/ri/openjdk-13+33_linux-x64_bin.tar.gz"
     },
-    "lavalink": "https://ci.fredboat.com/repository/download/Lavalink_Build/8231:id/Lavalink.jar?guest=1",
+    "lavalink": "https://ci.fredboat.com/repository/download/Lavalink_Build/8273:id/Lavalink.jar?guest=1",
     "fileRunBot": "bot.js"
 }
