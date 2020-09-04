@@ -3,3 +3,4 @@ bot/*
 node_modules
 logs/
 java/
+*.zip
