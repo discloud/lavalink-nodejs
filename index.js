@@ -60,6 +60,7 @@ const
     { readdirSync, appendFileSync, unlinkSync, mkdirSync, rmdirSync } = require("fs"), //chamado o fs (is native in node) para ler diretário e criar os arquivos de logs na pasta logs
     moment = require("moment"), //chamando o node
     time = moment().unix(), //hora do start code
+    ram = require("discloud-status"), // verificar a ram
     config = require("./config.json") //chamando a config da macumba
         /*Tradução do config.json
             - openJDK //objeto que contem as coisas necesárias do openJDK
@@ -116,6 +117,10 @@ async function runLavalink() {
     // quando o lavalink cair
     runLava.on("close", async (code) => {
         console.log(`lavalink desligou com o code ${code}`)
+        if (code === 127) {
+            console.error("Por favor delete a pasta java para resolver!!\nEsse aconteceu devido que os arquivos estão danificados!!!")
+            process.exit(code)
+        }
         if (tryRunLavalink < 3) { //já reniciou mais de 3 vezes contadas?
             console.error("Tentando reniciar o lavalink...")
             tryRunLavalink = tryRunLavalink + 1 // contador
@@ -123,7 +128,7 @@ async function runLavalink() {
         } else { 
             console.error("O lavalink caiu mais de 3 seguidas... Tudo vai ser desligado!!")
             if(runNode) await runNode.kill() //matar o node do bot (pensando bem vai dar BO com shards (já que o codigo é 1 genero de que as shards fazem))
-            process.exit(runLava.exitCode) //desligar tudo
+            process.exit(code) //desligar tudo
         }
     })
 
@@ -189,6 +194,20 @@ async function runBot(dir) {
 
 //função que executa tuda a magia
 async function run(){
+    if (process.platform !== "linux") {
+        console.error("Este codigo só funciona em plantaformas Linux, de momento este codigo não fuinciona aqui!!!")
+        process.exit(1)
+    }
+    
+    const allram = ram.totalRam()
+    if (allram == "NaN") console.log("Verificação de RAM inisponivel de Momento!!")
+    else {
+        const numberRAM = await allram.split("").filter(n => (Number(n) || n == 0)).join("")
+        const lRAM = await allram.split("").filter(n => !(Number(n) || n == 0)).join("")
+        if (numberRAM < 512 && lRAM === "MB") console.log(`Você so tem ${allram} disponivel para o codigo funcionar!!\nIsso não muito recomendado o minimo é 512MB!!`)
+        else console.log(`Você tem disponivel: ${allram}`)
+    }
+    
     console.log("Preparando o sistema")
     let rootCode = readdirSync("./", {encoding: "utf-8", withFileTypes: true}) //lê a raiz do codigo
 

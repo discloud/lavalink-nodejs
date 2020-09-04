@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "discloud-status": "^0.1.6",
     "moment": "^2.27.0"
   },
   "devDependencies": {
