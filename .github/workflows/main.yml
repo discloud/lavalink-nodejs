@@ -7,17 +7,22 @@ jobs:
     if: "github.event_name == 'push' && github.ref == 'refs/heads/dev' && startsWith(github.event.head_commit.message, '[UP]')"
     steps:
       - uses: actions/checkout@master
+      - uses: actions/setup-node@master
+      - name: Package Version
+        id: info
+        run: echo "::set-output name=version::$(node -p -e "require('./package.json').version")"
       - name: Compactar os arquivos
         uses: thedoctor0/zip-release@master
         with:
           filename: 'lavalink-nodejs.zip'
           exclusions: '*.git* *.eslintrc.json *package-lock.json'
       - name: Enviar para a realese
-        uses: marvinpinto/action-automatic-releases@v1.0.0
+        uses: marvinpinto/action-automatic-releases@master
         with:
           repo_token: "${{secrets.GITHUB_TOKEN}}"
           prerelease: false
-          automatic_release_tag: "latest"
+          automatic_release_tag: "${{ steps.info.outputs.version }}"
+          title: "LavaLink on Node.js v${{ steps.info.outputs.version }}"
           files: |
             *.zip
   artifact:
