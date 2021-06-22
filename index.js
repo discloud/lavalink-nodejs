@@ -195,7 +195,7 @@ async function runBot(dir) {
 //função que executa tuda a magia
 async function run(){
     if (process.platform !== "linux") {
-        console.error("Este codigo só funciona em plantaformas Linux, de momento este codigo não fuinciona aqui!!!")
+        console.error("Este codigo só funciona em plataformas Linux, de momento este codigo não fuinciona aqui!!!")
         process.exit(1)
     }
     
