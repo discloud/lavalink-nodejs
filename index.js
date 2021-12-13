@@ -111,7 +111,7 @@ let tryRunLavalink = 0,     //isto é 1 sistema de tentar fazer o lavalink renic
 //função que travalha com o lavalink
 async function runLavalink() {
     console.log("Iniciando Lavalink...")
-    const urlJava = /*process.cwd() + `/java/jdk-${config.openJDK.version}/bin/java`*/ java //caminho fixo até ao java
+    const urlJava = /*process.cwd() + `/java/jdk-${config.openJDK.version}/bin/java`*/ "java" //caminho fixo até ao java
     runLava = spawn(urlJava, ["-jar", "Lavalink.jar"], {cwd: "./java/lavalink"}) //executa 1 lavalink no diretório java/lavalink (dando 1 cd até lá executar)
 
     // quando o lavalink cair
